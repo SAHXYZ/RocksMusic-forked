@@ -2,14 +2,16 @@ import asyncio
 import os
 from datetime import datetime, timedelta
 from typing import Union
+import requests
+import yt_dlp
 
 from pyrogram import Client
 from pyrogram.types import InlineKeyboardMarkup
 from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.exceptions import AlreadyJoinedError, NoActiveGroupCall, TelegramServerError
 from pytgcalls.types import Update
-from pytgcalls.types.input_stream import AudioPiped, AudioVideoPiped
-from pytgcalls.types.input_stream.quality import HighQualityAudio, MediumQualityVideo
+from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types.input_stream.quality import HighQualityAudio
 from pytgcalls.types.stream import StreamAudioEnded
 
 import config
@@ -17,38 +19,22 @@ from VenomMusic import LOGGER, app
 from VenomMusic.misc import db
 from VenomMusic.utils.database import (
     add_active_chat,
-    add_active_video_chat,
     get_lang,
-    get_loop,
     group_assistant,
     is_autoend,
     music_on,
     remove_active_chat,
-    remove_active_video_chat,
-    set_loop,
 )
 from VenomMusic.utils.exceptions import AssistantErr
-from VenomMusic.utils.formatters import check_duration, seconds_to_min, speed_converter
-from VenomMusic.utils.inline.play import stream_markup
-from VenomMusic.utils.stream.autoclear import auto_clean
-from VenomMusic.utils.thumbnails import gen_thumb
 from strings import get_string
-
-import yt_dlp
 
 autoend = {}
 counter = {}
 
-
-async def _clear_(chat_id):
-    db[chat_id] = []
-    await remove_active_video_chat(chat_id)
-    await remove_active_chat(chat_id)
-
-
-# ======= New YouTube extractor using yt-dlp =======
+# =============== HYBRID YOUTUBE AUDIO FETCHER ==================
 async def extract_youtube_audio(video_id: str):
-    """Extract best audio URL from YouTube using yt-dlp."""
+    """Try yt-dlp first; if blocked, fallback to NexGenBots API."""
+    # 1️⃣ Try yt-dlp
     try:
         ydl_opts = {
             "format": "bestaudio/best",
@@ -57,12 +43,28 @@ async def extract_youtube_audio(video_id: str):
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-            return info.get("url"), info.get("title")
+            if info and info.get("url"):
+                LOGGER("VenomMusic").info(f"✅ yt-dlp worked for {info.get('title')}")
+                return info["url"], info.get("title")
     except Exception as e:
-        LOGGER("VenomMusic").error(f"❌ YouTube extraction failed: {e}")
-        return None, None
+        LOGGER("VenomMusic").warning(f"⚠️ yt-dlp failed, falling back to NexGen API ({e})")
+
+    # 2️⃣ Fallback: NexGenBots API
+    try:
+        api_url = f"https://api.nexgenbots.xyz/api/info?id={video_id}&apikey=30DxNexGenBots6533fd"
+        res = requests.get(api_url, timeout=10).json()
+        if "url" in res and res["url"]:
+            LOGGER("VenomMusic").info(f"✅ NexGen API success for {res.get('title', 'Unknown')}")
+            return res["url"], res.get("title", "Unknown Title")
+        else:
+            LOGGER("VenomMusic").error(f"❌ NexGen API returned no URL: {res}")
+    except Exception as e:
+        LOGGER("VenomMusic").error(f"❌ NexGen API failed: {e}")
+
+    return None, None
 
 
+# ===================== BASE CALL CLASS ==========================
 class Call(PyTgCalls):
     def __init__(self):
         self.userbot1 = Client(
@@ -73,42 +75,10 @@ class Call(PyTgCalls):
         )
         self.one = PyTgCalls(self.userbot1, cache_duration=100)
 
-        self.userbot2 = Client(
-            name="VenomAss2",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
-            session_string=str(config.STRING2),
-        )
-        self.two = PyTgCalls(self.userbot2, cache_duration=100)
-
-        self.userbot3 = Client(
-            name="VenomAss3",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
-            session_string=str(config.STRING3),
-        )
-        self.three = PyTgCalls(self.userbot3, cache_duration=100)
-
-        self.userbot4 = Client(
-            name="VenomAss4",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
-            session_string=str(config.STRING4),
-        )
-        self.four = PyTgCalls(self.userbot4, cache_duration=100)
-
-        self.userbot5 = Client(
-            name="VenomAss5",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
-            session_string=str(config.STRING5),
-        )
-        self.five = PyTgCalls(self.userbot5, cache_duration=100)
-
     async def stop_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         try:
-            await _clear_(chat_id)
+            await remove_active_chat(chat_id)
             await assistant.leave_group_call(chat_id)
         except:
             pass
@@ -140,7 +110,7 @@ class Call(PyTgCalls):
 
         link, title = await extract_youtube_audio(video_id)
         if not link:
-            raise AssistantErr("❌ Unable to extract audio link from YouTube.")
+            raise AssistantErr("❌ Unable to extract audio link from YouTube or API.")
 
         stream = AudioPiped(link, audio_parameters=HighQualityAudio())
 
@@ -159,35 +129,23 @@ class Call(PyTgCalls):
             raise AssistantErr(_["call_9"])
         except TelegramServerError:
             raise AssistantErr(_["call_10"])
+        except Exception as e:
+            LOGGER("VenomMusic").error(f"❌ Unknown stream error: {e}")
 
     async def ping(self):
+        """Check average ping of assistants."""
         pings = []
         if config.STRING1:
             pings.append(await self.one.ping)
-        if config.STRING2:
-            pings.append(await self.two.ping)
-        if config.STRING3:
-            pings.append(await self.three.ping)
-        if config.STRING4:
-            pings.append(await self.four.ping)
-        if config.STRING5:
-            pings.append(await self.five.ping)
-        return str(round(sum(pings) / len(pings), 3))
+        return str(round(sum(pings) / len(pings), 3)) if pings else "0.000"
 
     async def start(self):
-        LOGGER(__name__).info("Starting PyTgCalls Client...\n")
+        LOGGER(__name__).info("🎧 Starting PyTgCalls Client...")
         if config.STRING1:
             await self.one.start()
-        if config.STRING2:
-            await self.two.start()
-        if config.STRING3:
-            await self.three.start()
-        if config.STRING4:
-            await self.four.start()
-        if config.STRING5:
-            await self.five.start()
 
     async def decorators(self):
+        """Auto-stop on stream end or userbot leave."""
         @self.one.on_kicked()
         @self.one.on_closed_voice_chat()
         @self.one.on_left()

@@ -3,6 +3,7 @@ from os import getenv
 from dotenv import load_dotenv
 from pyrogram import filters
 
+# Load environment variables
 load_dotenv()
 
 # ===================================================
@@ -32,11 +33,13 @@ HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 # 🔹 YouTube & API Configuration
 # ===================================================
 
-# 🔸 TheQuickEarn or NexGenBots API (for direct YouTube audio)
-API_URL = getenv("API_URL", "https://api.thequickearn.xyz")
+# ⚡ Hybrid YouTube system:
+# 1️⃣ yt-dlp used first (local)
+# 2️⃣ NexGenBots API used as fallback
+API_URL = getenv("API_URL", "https://api.nexgenbots.xyz")
 API_KEY = getenv("API_KEY", "30DxNexGenBots275daa")
 
-# 🔸 YouTube Official Data API (for metadata, search, etc.)
+# Optional YouTube Data API (for metadata/search)
 YOUTUBE_API_KEY = getenv("YOUTUBE_API_KEY", None)
 
 # ===================================================
@@ -52,7 +55,7 @@ SPOTIFY_CLIENT_SECRET = getenv("SPOTIFY_CLIENT_SECRET", None)
 
 UPSTREAM_REPO = getenv("UPSTREAM_REPO", "https://github.com/fessstygee/RocksMusic")
 UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "master")
-GIT_TOKEN = getenv("GIT_TOKEN", None)  # only needed if repo is private
+GIT_TOKEN = getenv("GIT_TOKEN", None)  # Needed only for private repos
 
 # ===================================================
 # 🔹 Support Links & Privacy
@@ -66,7 +69,11 @@ PRIVACY_LINK = getenv("PRIVACY_LINK", "https://telegra.ph/Privacy-Policy-for-Roc
 # 🔹 Bot Limits & Settings
 # ===================================================
 
-DURATION_LIMIT_MIN = int(getenv("DURATION_LIMIT", 1700))
+try:
+    DURATION_LIMIT_MIN = int(getenv("DURATION_LIMIT", 1700))
+except ValueError:
+    DURATION_LIMIT_MIN = 1700
+
 PLAYLIST_FETCH_LIMIT = int(getenv("PLAYLIST_FETCH_LIMIT", 25))
 TG_AUDIO_FILESIZE_LIMIT = int(getenv("TG_AUDIO_FILESIZE_LIMIT", 104857600))
 TG_VIDEO_FILESIZE_LIMIT = int(getenv("TG_VIDEO_FILESIZE_LIMIT", 2145386496))
@@ -115,6 +122,7 @@ SPOTIFY_PLAYLIST_IMG_URL = "https://te.legra.ph/file/95b3ca7993bbfaf993dcb.jpg"
 # ===================================================
 
 def time_to_seconds(time):
+    """Convert mm:ss format to seconds."""
     stringt = str(time)
     return sum(int(x) * 60**i for i, x in enumerate(reversed(stringt.split(":"))))
 

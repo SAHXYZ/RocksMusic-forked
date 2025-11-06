@@ -28,43 +28,54 @@ from VenomMusic.utils.database import (
 from VenomMusic.utils.exceptions import AssistantErr
 from strings import get_string
 
+
 autoend = {}
 counter = {}
 
-# =============== HYBRID YOUTUBE AUDIO FETCHER ==================
+# ===============================================================
+#  HYBRID YOUTUBE AUDIO FETCHER (QuickEarn API + yt-dlp fallback)
+# ===============================================================
+
 async def extract_youtube_audio(video_id: str):
-    """Try yt-dlp first; if blocked, fallback to NexGenBots API."""
-    # 1️⃣ Try yt-dlp
+    """Fetch best audio URL via QuickEarn API or yt-dlp fallback."""
+    # 1️⃣ Try QuickEarn API first
+    try:
+        api_url = f"{config.API_URL}/api/info?id={video_id}&apikey={config.API_KEY}"
+        res = requests.get(api_url, timeout=10).json()
+        if "url" in res and res["url"]:
+            LOGGER("VenomMusic").info(f"✅ QuickEarn API success: {res.get('title', 'Unknown Title')}")
+            return res["url"], res.get("title", "Unknown Title")
+        else:
+            LOGGER("VenomMusic").warning(f"⚠️ QuickEarn API returned no URL: {res}")
+    except Exception as e:
+        LOGGER("VenomMusic").warning(f"⚠️ QuickEarn API error: {e}")
+
+    # 2️⃣ Fallback: yt-dlp (with cookie support)
     try:
         ydl_opts = {
             "format": "bestaudio/best",
             "quiet": True,
             "noplaylist": True,
         }
+        # If cookies.txt exists, use it
+        if os.path.exists("cookies.txt"):
+            ydl_opts["cookiefile"] = "cookies.txt"
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
             if info and info.get("url"):
-                LOGGER("VenomMusic").info(f"✅ yt-dlp worked for {info.get('title')}")
+                LOGGER("VenomMusic").info(f"✅ yt-dlp success: {info.get('title')}")
                 return info["url"], info.get("title")
     except Exception as e:
-        LOGGER("VenomMusic").warning(f"⚠️ yt-dlp failed, falling back to NexGen API ({e})")
-
-    # 2️⃣ Fallback: NexGenBots API
-    try:
-        api_url = f"https://api.nexgenbots.xyz/api/info?id={video_id}&apikey=30DxNexGenBots6533fd"
-        res = requests.get(api_url, timeout=10).json()
-        if "url" in res and res["url"]:
-            LOGGER("VenomMusic").info(f"✅ NexGen API success for {res.get('title', 'Unknown')}")
-            return res["url"], res.get("title", "Unknown Title")
-        else:
-            LOGGER("VenomMusic").error(f"❌ NexGen API returned no URL: {res}")
-    except Exception as e:
-        LOGGER("VenomMusic").error(f"❌ NexGen API failed: {e}")
+        LOGGER("VenomMusic").error(f"❌ yt-dlp failed: {e}")
 
     return None, None
 
 
-# ===================== BASE CALL CLASS ==========================
+# ===============================================================
+#  MAIN CALL CLASS
+# ===============================================================
+
 class Call(PyTgCalls):
     def __init__(self):
         self.userbot1 = Client(
@@ -80,11 +91,11 @@ class Call(PyTgCalls):
         try:
             await remove_active_chat(chat_id)
             await assistant.leave_group_call(chat_id)
-        except:
-            pass
+        except Exception as e:
+            LOGGER("VenomMusic").warning(f"⚠️ stop_stream error: {e}")
 
     async def stream_call(self, video_id):
-        """Stream YouTube video in log group for verification"""
+        """Test stream to confirm valid audio."""
         assistant = await group_assistant(self, config.LOG_GROUP_ID)
         link, title = await extract_youtube_audio(video_id)
         if not link:
@@ -98,9 +109,9 @@ class Call(PyTgCalls):
             )
             await asyncio.sleep(3)
             await assistant.leave_group_call(config.LOG_GROUP_ID)
-            LOGGER("VenomMusic").info(f"✅ Verified working audio stream for {title}")
+            LOGGER("VenomMusic").info(f"✅ Verified working audio stream for: {title}")
         except Exception as e:
-            LOGGER("VenomMusic").error(f"❌ Stream error: {e}")
+            LOGGER("VenomMusic").error(f"❌ Stream test failed: {e}")
 
     async def join_call(self, chat_id: int, original_chat_id: int, video_id: str):
         """Main function to join and stream from YouTube."""

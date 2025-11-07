@@ -87,3 +87,12 @@ SUPPORT_GROUP = os.getenv("SUPPORT_GROUP", "https://t.me/RocksMusicSupport")
 UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/fessstygee/RocksMusic")
 UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "master")
 GIT_TOKEN = os.getenv("GIT_TOKEN", None)
+
+# =====================================================
+# 🔹 Assistant String Sessions
+# =====================================================
+STRING1 = os.getenv("STRING_SESSION", None)
+STRING2 = os.getenv("STRING_SESSION2", None)
+STRING3 = os.getenv("STRING_SESSION3", None)
+STRING4 = os.getenv("STRING_SESSION4", None)
+STRING5 = os.getenv("STRING_SESSION5", None)

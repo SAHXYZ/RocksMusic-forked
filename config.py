@@ -81,3 +81,9 @@ DURATION_LIMIT_MIN = int(os.getenv("DURATION_LIMIT_MIN", 300))
 SUPPORT_CHANNEL = os.getenv("SUPPORT_CHANNEL", "https://t.me/RocksMusicUpdates")
 SUPPORT_GROUP = os.getenv("SUPPORT_GROUP", "https://t.me/RocksMusicSupport")
 
+# =====================================================
+# 🔹 Git / Upstream Configuration
+# =====================================================
+UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/fessstygee/RocksMusic")
+UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "master")
+GIT_TOKEN = os.getenv("GIT_TOKEN", None)

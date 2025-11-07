@@ -102,3 +102,9 @@ STRING5 = os.getenv("STRING_SESSION5", None)
 # =====================================================
 adminlist = []
 confirmer = {}
+
+# =====================================================
+# 🔹 Spotify Configuration (Optional)
+# =====================================================
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")

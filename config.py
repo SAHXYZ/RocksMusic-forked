@@ -1,3 +1,8 @@
+# =====================================================
+# 🎵 RocksMusic Configuration File (Final)
+# 🔹 Maintained by @sahalam | Compatible with VenomMusic Core
+# =====================================================
+
 import os
 import asyncio
 import aiohttp
@@ -8,24 +13,29 @@ from dotenv import load_dotenv
 # =====================================================
 load_dotenv()
 
-# 🔸 Telegram API
+# =====================================================
+# 📲 Telegram API Configuration
+# =====================================================
 API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
-# 🔸 MongoDB & Logging
+# =====================================================
+# 🗃️ MongoDB & Logging
+# =====================================================
 MONGO_DB_URI = os.getenv("MONGO_DB_URI", "")
 LOG_GROUP_ID = int(os.getenv("LOG_GROUP_ID", 0))
 OWNER_ID = int(os.getenv("OWNER_ID", 0))
 
-# 🔸 Heroku Config
+# =====================================================
+# ☁️ Heroku Deployment Config
+# =====================================================
 HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME", "")
 HEROKU_API_KEY = os.getenv("HEROKU_API_KEY", "")
 
 # =====================================================
-# 🔹 YouTube / RocksMusic API Configuration
+# 🎧 YouTube / RocksMusic API Configuration
 # =====================================================
-# Primary API (Direct)
 API_URL = os.getenv("API_URL", "https://api.thequickearn.xyz")
 API_KEY = os.getenv("API_KEY", "30DxNexGenBots275daa")
 
@@ -37,12 +47,12 @@ CURRENT_API_URL = API_URL
 
 
 # =====================================================
-# 🔹 Auto Loader for API URL (Dynamic)
+# ⚙️ Auto Loader for Backup API URL
 # =====================================================
 async def load_backup_api():
     """
-    Fetch backup API URL from Pastebin if main URL fails.
-    This allows changing API endpoints without redeploying the bot.
+    Fetch backup API URL from Pastebin if the main URL fails.
+    This allows changing API endpoints dynamically without redeployment.
     """
     global CURRENT_API_URL
     try:
@@ -61,7 +71,7 @@ async def load_backup_api():
 
 
 # =====================================================
-# 🔹 Auto Initialize on Startup
+# 🧠 Auto Initialize on Startup
 # =====================================================
 try:
     loop = asyncio.get_event_loop()
@@ -74,22 +84,21 @@ except RuntimeError:
 
 
 # =====================================================
-# 🔹 Other Optional Bot Configs
+# 🧾 Other Optional Bot Configs
 # =====================================================
-# Example for song duration limits, admin IDs, etc.
 DURATION_LIMIT_MIN = int(os.getenv("DURATION_LIMIT_MIN", 300))
 SUPPORT_CHANNEL = os.getenv("SUPPORT_CHANNEL", "https://t.me/RocksMusicUpdates")
 SUPPORT_GROUP = os.getenv("SUPPORT_GROUP", "https://t.me/RocksMusicSupport")
 
 # =====================================================
-# 🔹 Git / Upstream Configuration
+# 🔄 Git / Upstream Configuration
 # =====================================================
 UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/fessstygee/RocksMusic")
 UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "master")
 GIT_TOKEN = os.getenv("GIT_TOKEN", None)
 
 # =====================================================
-# 🔹 Assistant String Sessions
+# 🧵 Assistant String Sessions
 # =====================================================
 STRING1 = os.getenv("STRING_SESSION", None)
 STRING2 = os.getenv("STRING_SESSION2", None)
@@ -98,24 +107,24 @@ STRING4 = os.getenv("STRING_SESSION4", None)
 STRING5 = os.getenv("STRING_SESSION5", None)
 
 # =====================================================
-# 🔹 Admin System Placeholders (for compatibility)
+# 🧩 Compatibility Variables (Must Exist)
 # =====================================================
-adminlist = []
+
+# Admin system (used by VenomMusic decorators)
+adminlist = {}
 confirmer = {}
 
-# =====================================================
-# 🔹 Spotify Configuration (Optional)
-# =====================================================
+# Spotify (optional, prevents crash in Spotify.py)
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
 
-# =====================================================
-# 🔹 AutoClean Feature (for compatibility)
-# =====================================================
+# AutoClean (used by autoclear.py)
 autoclean = True
 
+# Ban system (used by __main__.py)
+BANNED_USERS = set()
 
 # =====================================================
-# 🔹 Ban System Placeholder (for compatibility)
+# ✅ Configuration Loaded
 # =====================================================
-BANNED_USERS = set()
+print("✅ RocksMusic Config Loaded Successfully | Powered by @sahxyz88")

@@ -108,3 +108,9 @@ confirmer = {}
 # =====================================================
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
+
+# =====================================================
+# 🔹 AutoClean Feature (for compatibility)
+# =====================================================
+autoclean = True
+

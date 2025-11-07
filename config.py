@@ -137,6 +137,10 @@ SPOTIFY_ARTIST_IMG_URL = os.getenv("SPOTIFY_ARTIST_IMG_URL", "https://files.catb
 SPOTIFY_ALBUM_IMG_URL = os.getenv("SPOTIFY_ALBUM_IMG_URL", "https://files.catbox.moe/fa1xas.jpg")
 SPOTIFY_PLAYLIST_IMG_URL = os.getenv("SPOTIFY_PLAYLIST_IMG_URL", "https://files.catbox.moe/fa1xas.jpg")
 
+# 🧩 Telegram media previews (required by callback.py)
+TELEGRAM_AUDIO_URL = os.getenv("TELEGRAM_AUDIO_URL", "https://files.catbox.moe/fa1xas.jpg")
+TELEGRAM_VIDEO_URL = os.getenv("TELEGRAM_VIDEO_URL", "https://files.catbox.moe/fa1xas.jpg")
+
 # =====================================================
 # 📢 Support & Contact
 # =====================================================
@@ -167,3 +171,4 @@ if SUPPORT_GROUP and not re.match(r"(?:http|https)://", SUPPORT_GROUP):
 # ✅ Final Log
 # =====================================================
 print(f"✅ {BOT_NAME} Config Loaded Successfully | @{BOT_USERNAME}")
+

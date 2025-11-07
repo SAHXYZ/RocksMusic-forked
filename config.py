@@ -114,3 +114,8 @@ SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
 # =====================================================
 autoclean = True
 
+
+# =====================================================
+# 🔹 Ban System Placeholder (for compatibility)
+# =====================================================
+BANNED_USERS = set()
